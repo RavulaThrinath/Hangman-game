@@ -6,6 +6,12 @@
 
 body {
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  height: 100vh;
+  margin: auto;
 }
 
 .container {
@@ -114,23 +120,26 @@ body {
 }
 
 .content {
-  display: inline-block;
-  margin: 0 auto;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
 }
 
 #word {
   text-align: left;
-  font-size: 25px;
+  font-size: 30px;
 }
 
 .guess-container {
   text-align: left;
-  font-size: 25px;
+  font-size: 30px;
   margin-top: 15px;
 }
 
 #guess {
-  font-size: 25px;
+  font-size: 30px;
   text-align: center;
   width: 50px;
   border: none;
@@ -141,12 +150,12 @@ body {
 
 #misses {
   text-align: left;
-  font-size: 20px;
+  font-size: 25px;
   margin-top: 5px;
 }
 
 .instruction {
   text-align: left;
-  font-size: 15px;
+  font-size: 20px;
   margin-top: 5px;
 }
