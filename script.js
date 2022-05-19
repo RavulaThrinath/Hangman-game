@@ -1,116 +1,143 @@
-let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const alphabet = document.getElementById("alphabet");
-const passwordBoard = [
-  "A bad workman always blames his tools",
-  "A bird in hand is worth two in the bush",
-  "An apple a day keeps the doctor away",
-  "Better to wear out than to rust out",
-  "Don’t judge a book by its cover",
-  "Good things come to those who wait",
-  "If you can’t beat them, join them",
-  "It’s no use crying over spilt milk",
+var wordChoices = [
+  'hangman',
+  'untitled',
+  'captain',
+  'anonymous',
+  'save',
+  'settings',
+  'change view',
+  'log in',
+  'sign up',
+  'console',
+  'assets',
+  'shortcuts',
+  'comments',
+  'delete',
+  'collections',
+  'fork',
+  'share',
+  'export',
+  'embed'
 ];
-const passwordDiv = document.querySelector("#board");
-const imgDiv = document.querySelector("#hangin-dude");
-const random = Math.floor(Math.random() * passwordBoard.length);
-const password = passwordBoard[random];
-const yes = new Audio("yes.wav");
-const no = new Audio("no.wav");
-const win = new Audio("nice-work.wav");
-const lose = new Audio("oh-my-god-1.wav");
-let fail = 1;
-let countDown;
-const start = function () {
-  letters.split("").forEach((letter) => {
-    const html = `<div class="letter">${letter}</div>`;
-    alphabet.insertAdjacentHTML("beforeend", html);
-  });
-  showPassword();
-  showHangman(fail);
-};
-window.onload = start;
-const passwordDashed = password.split("").map((letter) => {
-  if (letter === " ") return " ";
-  else if (letter === "’") return "’";
-  else if (letter === ",") return ",";
-  else return "_";
-});
-const showPassword = function () {
-  passwordDiv.innerHTML = passwordDashed.join("");
-};
-const showHangman = function (nr) {
-  imgDiv.innerHTML = `<img src="img/${nr}.svg" alt="" />`;
-};
-const checkForLetter = function (e) {
-  if (e.target.classList.contains("letter")) {
-    if (password.toUpperCase().split("").includes(e.target.textContent)) {
-      yes.play();
-      password
-        .toUpperCase()
-        .split("")
-        .forEach((letter, i, arr) => {
-          if (letter === e.target.textContent) {
-            passwordDashed[i] = letter;
-            showPassword();
+var result = 0;
+var wordStorage = '';
+var guesses = '';
+var missStorage = '';
+var word = document.querySelector('#word');
+var guess = document.querySelector('#guess');
+var misses = document.querySelector('#misses');
+var man = document.querySelectorAll('.man-0');
+
+function generateWordStorage() {
+  wordStorage = wordChoices[Math.floor(Math.random() * wordChoices.length)];
+}
+
+function generateGuessWord() {
+  var guessWord = '';
+  var isFinish = true;
+
+  for (var i = 0; i < wordStorage.length; i++) {
+    if (wordStorage[i] != ' ') {
+      if (guesses.toUpperCase().indexOf(wordStorage[i].toUpperCase()) >= 0) {
+        guessWord += wordStorage[i].toUpperCase() + '&nbsp;';
+      }
+      else {
+        guessWord += '_&nbsp;';
+
+        isFinish = false;
+      }
+    }
+    else {
+      guessWord += '&nbsp;&nbsp;';
+    }
+  }
+
+  word.innerHTML = 'WORD: ' + guessWord;
+
+  if (isFinish) {
+    result = 1;
+  }
+}
+
+function generateMisses() {
+  var missedLetters = '';
+
+  for (var i = 0; i < man.length; i++) {
+    man[i].style.display = 'none';
+  }
+
+  for (var i = 0; i < missStorage.length; i++) {
+    document.querySelector('.man-' + (i + 1)).style.display = 'block';
+
+    missedLetters += missStorage[i] + ', ';
+  }
+
+  missedLetters = missedLetters.substring(0, missedLetters.length - 2);
+  misses.innerHTML = 'MISSES: ' + missedLetters;
+
+  if (missStorage.length >= 6) {
+    result = 2;
+  }
+}
+
+function initializeGame() {
+  result = 0;
+  wordStorage = '';
+  guesses = '';
+  missStorage = '';
+
+  word.innerText = '';
+  guess.value = '';
+  misses.innerText = '';
+
+  generateWordStorage();
+  generateGuessWord();
+  generateMisses();
+
+  guess.disabled = false;
+}
+
+initializeGame();
+
+guess.addEventListener('keypress', function(evt) {
+  if (evt.keyCode === 13) {
+    if (result === 0) {
+      var getTime = setInterval(function() {
+        if (wordStorage.toUpperCase().indexOf(guess.value.toUpperCase()) >= 0) {
+          guesses += guess.value.toUpperCase();
+        }
+        else {
+          if (missStorage.toUpperCase().indexOf(guess.value.toUpperCase()) < 0) {
+            missStorage += guess.value.toUpperCase();
           }
+        }
+
+        guess.value = '';
+
+        generateGuessWord();
+        generateMisses();
+
+        clearInterval(getTime);
+
+        var getTime2 = setInterval(function() {
+          if (result === 1) {
+            guess.disabled = true;
+
+            if (confirm('You won! You have ' + missStorage.length + ' miss(es). ' + 'Do you like to try again?')) {
+              initializeGame();
+            }
+          }
+          else if (result === 2) {
+            guess.disabled = true;
+
+            if (confirm('You lose! The answer is "' + wordStorage + '". Better luck next time. Do you like to try again?')) {
+              initializeGame();
+            }
+          }
+
+          clearInterval(getTime2);
         });
-      deactivateLetter(true, e.target);
-    } else {
-      no.play();
-      fail++;
-      showHangman(fail);
-      deactivateLetter(false, e.target);
-    }
-    if (fail == 6) {
-      finish(false);
-    }
-    if (password.toUpperCase() === passwordDashed.join("")) {
-      finish(true);
+      }, 100);
     }
   }
-};
-alphabet.addEventListener("click", checkForLetter);
-const deactivateLetter = function (hit, letter, audio) {
-  letter.style.border = hit
-    ? "1px solid rgb(50, 177, 149)"
-    : "1px solid rgba(255, 0, 0, 0.338)";
-  letter.style.backgroundColor = hit
-    ? "rgb(50, 177, 149)"
-    : "rgba(255, 0, 0, 0.338)";
-  letter.style.color = "white";
-  letter.style.cursor = "default";
-};
-const finish = function (succes) {
-  if (succes) {
-    alphabet.innerHTML = `<h1>NICE WORK!</h1><div class='btn'>PLAY AGAIN</div>`;
-    win.play();
-    clearInterval(countDown);
-  } else {
-    alphabet.innerHTML = `<h1>YOU LOST!</h1><div class='btn'>TRY AGAIN</div>`;
-    lose.play();
-    clearInterval(countDown);
-  }
-  document
-    .querySelector(".btn")
-    .addEventListener("click", () => location.reload());
-};
-const timer = function () {
-  const timer = document.querySelector("#timer");
-  let time = new Date(60000);
-  const options = {
-    minute: "2-digit",
-    second: "2-digit",
-  };
-  const tick = function () {
-    time -= 1000;
-    timer.textContent = Intl.DateTimeFormat("en-US", options).format(time);
-    if (time == 0) {
-      finish(false);
-      clearInterval(countDown);
-    }
-  };
-  tick();
-  countDown = setInterval(tick, 1000);
-  return countDown;
-};
-timer();
+});
